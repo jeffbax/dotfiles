@@ -1,0 +1,13 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Fish shell generated files
+fish_variables
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
