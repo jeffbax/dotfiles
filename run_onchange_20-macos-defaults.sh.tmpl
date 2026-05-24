@@ -29,6 +29,55 @@ set_plist_bool() {
   fi
 }
 
+write_default NSGlobalDomain AppleShowAllExtensions bool true
+
+write_default com.apple.finder FinderSpawnTab bool false
+write_default com.apple.finder FXArrangeGroupViewBy string Name
+
+# Finder codes: SCcf = search current folder, clmv = column view.
+write_default com.apple.finder FXDefaultSearchScope string SCcf
+write_default com.apple.finder FXPreferredGroupBy string Kind
+write_default com.apple.finder FXPreferredViewStyle string clmv
+
+# Show the POSIX path in Finder window titles.
+write_default com.apple.finder FXShowPosixPathInTitle bool true
+
+# Finder codes: PfHm = home folder; target path must be a file URL.
+write_default com.apple.finder NewWindowTarget string PfHm
+write_default com.apple.finder NewWindowTargetPath string "file://$HOME/"
+# Set the Finder prefs for showing a few different volumes on the Desktop.
+write_default com.apple.finder ShowExternalHardDrivesOnDesktop bool true
+write_default com.apple.finder ShowPathbar bool true
+write_default com.apple.finder ShowStatusBar bool true
+
+# Use AirDrop over every interface. srsly this should be a default.
+defaults write com.apple.NetworkBrowser BrowseAllInterfaces 1
+
+printf '%s\n' "Showing $HOME/Library in Finder"
+chflags nohidden "$HOME/Library"
+
+write_default com.apple.Safari AlwaysRestoreSessionAtLaunch bool true
+write_default com.apple.Safari AutoFillCreditCardData bool false
+write_default com.apple.Safari AutoFillFromAddressBook bool false
+write_default com.apple.Safari AutoFillPasswordsInSafari bool false
+write_default com.apple.Safari AutoOpenSafeDownloads bool false
+write_default com.apple.Safari IncludeDevelopMenu bool true
+write_default com.apple.Safari PrivateSearchEngineUsesNormalSearchEngineToggle bool false
+write_default com.apple.Safari PrivateSearchProviderShortName string DuckDuckGo
+write_default com.apple.Safari SearchProviderShortName string Google
+write_default com.apple.Safari ShowFullURLInSmartSearchField bool true
+write_default com.apple.Safari.plist ShowFavoritesBar bool false
+write_default com.apple.Safari ShowOverlayStatusBar bool true
+
+# WBS keys record the explicit search engine choices in newer Safari versions.
+write_default com.apple.Safari WBSLastPrivateSearchEngineStringExplicitlyChosenByUserKey string com.duckduckgo
+write_default com.apple.Safari WBSLastSearchEngineStringExplicitlyChosenByUserKey string com.google
+
+# Cover both Safari's preference key and WebKit's developer extras switch.
+write_default com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey bool true
+write_default com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled bool true
+write_default NSGlobalDomain WebKitDeveloperExtras bool true
+
 write_default com.apple.Terminal "Default Window Settings" string "Homebrew"
 write_default com.apple.Terminal "Startup Window Settings" string "Homebrew"
 
