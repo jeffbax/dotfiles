@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+source_dir="{{ .chezmoi.sourceDir }}"
+
+if [ ! -d "$source_dir/.git" ]; then
+  printf '%s\n' "chezmoi source is not a git repo; skipping git hook setup."
+  exit 0
+fi
+
+current_hooks_path="$(git -C "$source_dir" config --local --get core.hooksPath || true)"
+
+if [ "$current_hooks_path" = ".githooks" ]; then
+  printf '%s\n' "chezmoi source git hooks are already configured."
+  exit 0
+fi
+
+git -C "$source_dir" config --local core.hooksPath .githooks
+printf '%s\n' "Configured chezmoi source git hooks path: .githooks"

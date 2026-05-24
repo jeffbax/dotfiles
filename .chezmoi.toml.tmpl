@@ -1,0 +1,4 @@
+{{- $choices := list "common" "personal" "work" -}}
+{{- $brewProfile := promptChoiceOnce . "brewProfile" "Homebrew profile for this machine" $choices "common" -}}
+[data]
+  brewProfile = {{ $brewProfile | quote }}

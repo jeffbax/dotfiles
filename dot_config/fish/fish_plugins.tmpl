@@ -1,0 +1,7 @@
+{{ includeTemplate ".chezmoitemplates/fish_plugins.common" . }}
+{{- $brewProfile := (index . "brewProfile" | default "common") -}}
+{{- if eq $brewProfile "personal" -}}
+  {{ includeTemplate ".chezmoitemplates/fish_plugins.personal" . }}
+{{- else if eq $brewProfile "work" -}}
+  {{ includeTemplate ".chezmoitemplates/fish_plugins.work" . }}
+{{- end -}}

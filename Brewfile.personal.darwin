@@ -1,0 +1,26 @@
+cask "airserver", args: { appdir: "/Applications" }
+cask "audio-hijack", args: { appdir: "/Applications" }
+cask "crossover", args: { appdir: "/Applications" }
+cask "cyberduck", args: { appdir: "/Applications" }
+cask "diffusionbee", args: { appdir: "/Applications" }
+cask "discord", args: { appdir: "/Applications" }
+cask "handbrake-app", args: { appdir: "/Applications" }
+cask "little-snitch", args: { appdir: "/Applications" }
+cask "spotify", args: { appdir: "/Applications" }
+cask "steam", args: { appdir: "/Applications" }
+cask "transmission", args: { appdir: "/Applications" }
+
+mas "CardPointers", id: 1472875808
+mas "djay Pro", id: 947578651
+mas "DuckDuckGo Privacy for Safari", id: 1482920575
+mas "Flighty", id: 1358823008
+mas "Ivory", id: 6444602274
+mas "NordLayer", id: 1488888843
+mas "PCalc", id: 403504866
+mas "Prime Video", id: 545519333
+mas "Rakuten Cash Back", id: 1451893560
+mas "Tapestry", id: 6448078074
+mas "TestFlight", id: 899247664
+mas "Textual 7", id: 1262957439
+mas "The Camelizer", id: 1532579087
+mas "WhatsApp", id: 310633997

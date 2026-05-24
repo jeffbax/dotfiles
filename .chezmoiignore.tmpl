@@ -1,0 +1,15 @@
+Brewfile.common
+Brewfile.common.darwin
+Brewfile.personal
+Brewfile.personal.darwin
+Brewfile.work
+Brewfile.work.darwin
+LICENSE
+README.md
+install.sh
+
+{{- if ne (index . "brewProfile" | default "common") "work" }}
+.codex/AGENTS.md
+.codex/RTK.md
+.config/fish/chezmoi/work/**
+{{- end }}

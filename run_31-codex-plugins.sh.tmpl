@@ -1,0 +1,51 @@
+#!/bin/sh
+set -eu
+
+log() {
+  printf '%s\n' "$*"
+}
+
+if ! command -v codex >/dev/null 2>&1; then
+  log "Codex is not installed; skipping Codex plugin setup."
+  exit 0
+fi
+
+is_plugin_installed() {
+  plugin="$1"
+
+  codex plugin list 2>/dev/null | awk -v plugin="$plugin" '
+    $1 == plugin && $2 ~ /^installed/ { found = 1 }
+    END { exit found ? 0 : 1 }
+  '
+}
+
+install_plugin() {
+  plugin="$1"
+
+  if is_plugin_installed "$plugin"; then
+    log "Codex plugin is already installed: $plugin"
+    return 0
+  fi
+
+  log "Installing Codex plugin: $plugin"
+  codex plugin add "$plugin"
+
+  if is_plugin_installed "$plugin"; then
+    log "Codex plugin installed: $plugin"
+  else
+    log "Codex plugin was not found after install: $plugin"
+    return 1
+  fi
+}
+
+cat <<'CODEX_PLUGINS' | while IFS= read -r plugin; do
+{{ include ".chezmoitemplates/codex_plugins.common" -}}
+CODEX_PLUGINS
+  case "$plugin" in
+    ""|\#*)
+      continue
+      ;;
+  esac
+
+  install_plugin "$plugin"
+done

@@ -1,0 +1,17 @@
+{{- $brewProfile := (index . "brewProfile" | default "common") -}}
+if status is-interactive
+    set -l chezmoi_fish_dir "$HOME/.config/fish/chezmoi"
+    set -g chezmoi_profile {{ $brewProfile | quote }}
+
+    set -l chezmoi_fish_profiles common
+    switch "$chezmoi_profile"
+        case personal work
+            set --append chezmoi_fish_profiles "$chezmoi_profile"
+    end
+
+    for profile in $chezmoi_fish_profiles
+        for file in "$chezmoi_fish_dir"/$profile/*.fish
+            source "$file"
+        end
+    end
+end

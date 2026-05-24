@@ -1,0 +1,179 @@
+#!/bin/sh
+set -eu
+
+# Brewfile checksums. These make chezmoi rerun this script when any Brewfile changes.
+# Brewfile.common: {{ include "Brewfile.common" | sha256sum }}
+# Brewfile.common.darwin: {{ include "Brewfile.common.darwin" | sha256sum }}
+# Brewfile.personal: {{ include "Brewfile.personal" | sha256sum }}
+# Brewfile.personal.darwin: {{ include "Brewfile.personal.darwin" | sha256sum }}
+# Brewfile.work: {{ include "Brewfile.work" | sha256sum }}
+# Brewfile.work.darwin: {{ include "Brewfile.work.darwin" | sha256sum }}
+
+os="{{ .chezmoi.os }}"
+source_dir="{{ .chezmoi.sourceDir }}"
+configured_brew_profile={{ (index . "brewProfile" | default "common") | quote }}
+
+log() {
+  printf '%s\n' "$*"
+}
+
+install_homebrew() {
+  if command -v brew >/dev/null 2>&1; then
+    return 0
+  fi
+
+  case "$os" in
+    darwin|linux)
+      ;;
+    *)
+      log "Skipping Homebrew setup on unsupported OS: $os"
+      exit 0
+      ;;
+  esac
+
+  if ! command -v curl >/dev/null 2>&1; then
+    log "curl is required to install Homebrew."
+    return 1
+  fi
+
+  if [ ! -x /bin/bash ]; then
+    log "/bin/bash is required to install Homebrew."
+    return 1
+  fi
+
+  log "Installing Homebrew..."
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+}
+
+load_homebrew_env() {
+  for prefix in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+    if [ -x "$prefix/bin/brew" ]; then
+      eval "$(SHELL=/bin/sh "$prefix/bin/brew" shellenv)"
+      return 0
+    fi
+  done
+
+  command -v brew >/dev/null 2>&1
+}
+
+run_brew_bundle() {
+  brewfile="$1"
+
+  if [ ! -f "$brewfile" ]; then
+    return 0
+  fi
+
+  log "Running brew bundle --no-upgrade --file $brewfile"
+  brew bundle --no-upgrade --file "$brewfile"
+}
+
+current_login_shell() {
+  user_name="$(id -un)"
+
+  if command -v dscl >/dev/null 2>&1; then
+    dscl . -read "/Users/$user_name" UserShell 2>/dev/null | awk '{print $2}'
+    return 0
+  fi
+
+  if command -v getent >/dev/null 2>&1; then
+    getent passwd "$user_name" | awk -F: '{print $7}'
+    return 0
+  fi
+
+  printf '%s\n' "${SHELL:-}"
+}
+
+ensure_shell_is_allowed() {
+  fish_path="$1"
+
+  if [ ! -f /etc/shells ]; then
+    log "/etc/shells does not exist; skipping automatic shell change."
+    log "Run manually if your OS supports it: chsh -s $fish_path $(id -un)"
+    return 1
+  fi
+
+  if grep -Fx "$fish_path" /etc/shells >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if ! command -v sudo >/dev/null 2>&1; then
+    log "sudo is required to add $fish_path to /etc/shells."
+    log "Run manually: echo '$fish_path' | sudo tee -a /etc/shells"
+    return 1
+  fi
+
+  log "Adding $fish_path to /etc/shells..."
+  if printf '%s\n' "$fish_path" | sudo tee -a /etc/shells >/dev/null; then
+    return 0
+  fi
+
+  log "Could not add $fish_path to /etc/shells."
+  log "Run manually: echo '$fish_path' | sudo tee -a /etc/shells"
+  return 1
+}
+
+set_fish_as_default_shell() {
+  fish_path="$(command -v fish || true)"
+  user_name="$(id -un)"
+
+  if [ -z "$fish_path" ]; then
+    log "fish is not available after brew bundle; skipping shell change."
+    return 0
+  fi
+
+  if [ "$(current_login_shell)" = "$fish_path" ]; then
+    log "Default shell is already fish."
+    return 0
+  fi
+
+  if ! ensure_shell_is_allowed "$fish_path"; then
+    return 0
+  fi
+
+  if ! command -v chsh >/dev/null 2>&1; then
+    log "chsh is not available."
+    log "Run manually if your OS supports it: chsh -s $fish_path $user_name"
+    return 0
+  fi
+
+  log "Changing default shell to $fish_path..."
+  if chsh -s "$fish_path" "$user_name"; then
+    return 0
+  fi
+
+  log "Could not change the default shell automatically."
+  log "Run manually: chsh -s $fish_path $user_name"
+  return 0
+}
+
+install_homebrew
+load_homebrew_env
+
+if ! command -v brew >/dev/null 2>&1; then
+  log "Homebrew is not available after setup."
+  exit 1
+fi
+
+brew_profile="${CHEZMOI_BREW_PROFILE:-$configured_brew_profile}"
+
+case "$brew_profile" in
+  common|personal|work)
+    ;;
+  *)
+    log "Invalid Homebrew profile: $brew_profile"
+    log "Use one of: common, personal, work"
+    exit 1
+    ;;
+esac
+
+run_brew_bundle "$source_dir/Brewfile.common"
+run_brew_bundle "$source_dir/Brewfile.common.$os"
+
+if [ "$brew_profile" != "common" ]; then
+  run_brew_bundle "$source_dir/Brewfile.$brew_profile"
+  run_brew_bundle "$source_dir/Brewfile.$brew_profile.$os"
+else
+  log "Homebrew profile is common; skipping personal/work Brewfiles."
+fi
+
+set_fish_as_default_shell

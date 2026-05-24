@@ -1,0 +1,54 @@
+#!/bin/sh
+set -eu
+
+os="{{ .chezmoi.os }}"
+
+if [ "$os" != "darwin" ]; then
+  printf '%s\n' "Skipping macOS defaults on unsupported OS: $os"
+  exit 0
+fi
+
+write_default() {
+  domain="$1"
+  key="$2"
+  type="$3"
+  value="$4"
+
+  printf 'Setting %s %s = %s\n' "$domain" "$key" "$value"
+  defaults write "$domain" "$key" "-$type" "$value"
+}
+
+set_plist_bool() {
+  plist="$1"
+  entry="$2"
+  value="$3"
+
+  printf 'Setting %s %s = %s\n' "$plist" "$entry" "$value"
+  if ! /usr/libexec/PlistBuddy -c "Set $entry $value" "$plist" 2>/dev/null; then
+    /usr/libexec/PlistBuddy -c "Add $entry bool $value" "$plist"
+  fi
+}
+
+write_default com.apple.Terminal "Default Window Settings" string "Homebrew"
+write_default com.apple.Terminal "Startup Window Settings" string "Homebrew"
+
+write_default com.panic.Nova DefaultSyntaxMode string plain-text
+write_default com.panic.Nova TabWidth int 2
+write_default com.panic.Nova IndentationStyle int 0
+write_default com.panic.Nova EditorConfigEnabled bool true
+write_default com.panic.Nova IndentationStyleShouldAutodetect bool true
+write_default com.panic.Nova ShowIndentationGuides bool true
+write_default com.panic.Nova IndentNewLines bool true
+write_default com.panic.Nova AdjustIndentationWhileTyping bool true
+write_default com.panic.Nova ReformatInsertedText bool true
+write_default com.panic.Nova EnsureTrailingNewline bool true
+write_default com.panic.Nova TrimTrailingWhitespace bool true
+write_default com.panic.Nova TrimTrailingWhitespaceInEmptyLines bool true
+
+terminal_plist="$HOME/Library/Preferences/com.apple.Terminal.plist"
+
+if /usr/libexec/PlistBuddy -c 'Print :"Window Settings":Homebrew' "$terminal_plist" >/dev/null 2>&1; then
+  set_plist_bool "$terminal_plist" ':"Window Settings":Homebrew:useOptionAsMetaKey' true
+else
+  printf '%s\n' "Skipping Terminal useOptionAsMetaKey; profile not found: Homebrew"
+fi

@@ -1,0 +1,73 @@
+#!/bin/sh
+set -eu
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+log() {
+  printf '%s\n' "$*"
+}
+
+require_command() {
+  command_name="$1"
+  install_hint="$2"
+
+  if command -v "$command_name" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  log "Missing required command: $command_name"
+  log "$install_hint"
+  exit 1
+}
+
+staged_files() {
+  git diff --cached --name-only --diff-filter=ACMR
+}
+
+format_fish_files() {
+  staged_files | while IFS= read -r file; do
+    case "$file" in
+    *.fish)
+      if [ -f "$file" ]; then
+        require_command fish_indent "Install fish with: brew install fish"
+        fish_indent --write "$file"
+      fi
+      ;;
+    esac
+  done
+}
+
+format_shell_files() {
+  staged_files | while IFS= read -r file; do
+    case "$file" in
+    *.sh | .githooks/*)
+      if [ -f "$file" ]; then
+        require_command shfmt "Install shfmt with: brew install shfmt"
+        shfmt -i 2 -w "$file"
+      fi
+      ;;
+    esac
+  done
+}
+
+fail_if_format_changed_files() {
+  changed_files="$(staged_files | while IFS= read -r file; do
+    if [ -f "$file" ] && ! git diff --quiet -- "$file"; then
+      printf '%s\n' "$file"
+    fi
+  done)"
+
+  if [ -n "$changed_files" ]; then
+    log "Formatting changed staged files. Review and stage them, then commit again:"
+    printf '%s\n' "$changed_files"
+    exit 1
+  fi
+}
+
+require_command gitleaks "Install gitleaks with: brew install gitleaks"
+gitleaks protect --staged --redact
+
+format_fish_files
+format_shell_files
+fail_if_format_changed_files

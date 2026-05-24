@@ -1,0 +1,40 @@
+brew "mas"
+
+cask "1password", args: { appdir: "/Applications" }
+cask "1password-cli"
+cask "alfred", args: { appdir: "/Applications" }
+cask "codeedit"
+cask "copilot-cli"
+cask "firefox@developer-edition"
+cask "github"
+cask "imageoptim", args: { appdir: "/Applications" }
+cask "juxtacode", args: { appdir: "/Applications" }
+cask "netnewswire", args: { appdir: "/Applications" }
+cask "nova", args: { appdir: "/Applications" }
+cask "quitter"
+cask "setapp", args: { appdir: "/Applications" }
+cask "tolaria"
+cask "visual-studio-code", args: { appdir: "/Applications" }
+cask "vlc", args: { appdir: "/Applications" }
+
+mas "1Password for Safari", id: 1569813296
+mas "Bumpr", id: 1166066070
+mas "Control Panel for Twitter", id: 1668516167
+mas "Dark Mode for Safari", id: 1397180934
+mas "GoodLinks", id: 1474335294
+mas "Hush", id: 1544743900
+mas "Keynote", id: 361285480
+mas "Mapper", id: 1589391989
+mas "NepTunes", id: 1006739057
+mas "Noir", id: 1592917505
+mas "Numbers", id: 361304891
+mas "Pages", id: 361309726
+mas "PiPifier", id: 1160374471
+mas "Pixelmator Pro", id: 1289583905
+mas "Prompt", id: 1594420480
+# mas "SQLPro Studio", id: 985614903 # Using SetApp
+mas "StopTheMadness Pro", id: 6471380298
+mas "The Unarchiver", id: 425424353
+mas "Translatium", id: 6541750489
+mas "Vinegar", id: 1591303229
+mas "Wipr 2", id: 1662217862

@@ -1,0 +1,6 @@
+cask "codex"
+cask "google-chrome"
+cask "google-drive"
+cask "notion", args: { appdir: "/Applications" }
+cask "podman-desktop"
+cask "rubymine", args: { appdir: "/Applications" }

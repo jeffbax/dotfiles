@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+# fish_plugins checksum: {{ includeTemplate "dot_config/fish/fish_plugins.tmpl" . | sha256sum }}
+
+if ! command -v fish >/dev/null 2>&1; then
+  printf '%s\n' "fish is not installed; skipping Fisher plugin setup."
+  exit 0
+fi
+
+if ! fish -lc 'type -q fisher'; then
+  fish -lc 'curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher'
+fi
+
+fish -lc 'fisher update'
