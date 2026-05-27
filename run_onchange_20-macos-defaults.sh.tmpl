@@ -18,6 +18,16 @@ write_default() {
   defaults write "$domain" "$key" "-$type" "$value"
 }
 
+delete_default_if_exists() {
+  domain="$1"
+  key="$2"
+
+  if defaults read "$domain" "$key" >/dev/null 2>&1; then
+    printf 'Deleting %s %s\n' "$domain" "$key"
+    defaults delete "$domain" "$key"
+  fi
+}
+
 set_plist_bool() {
   plist="$1"
   entry="$2"
@@ -29,7 +39,41 @@ set_plist_bool() {
   fi
 }
 
+# Auto appearance; deleting AppleInterfaceStyle clears a forced light/dark mode.
+write_default NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically bool true
+
+# Scrollbar paging behavior: true jumps to the clicked spot in the scroll track.
+write_default NSGlobalDomain AppleScrollerPagingBehavior bool true
+write_default NSGlobalDomain AppleShowScrollBars string Always
+delete_default_if_exists NSGlobalDomain AppleInterfaceStyle
+
 write_default NSGlobalDomain AppleShowAllExtensions bool true
+
+# Title bar double-click behavior: Fill, not minimize.
+write_default NSGlobalDomain AppleActionOnDoubleClick string Fill
+write_default NSGlobalDomain AppleMiniaturizeOnDoubleClick bool false
+
+write_default com.apple.dock autohide bool true
+write_default com.apple.dock expose-group-apps bool true
+write_default com.apple.dock mineffect string scale
+write_default com.apple.dock orientation string bottom
+write_default com.apple.dock showAppExposeGestureEnabled bool true
+write_default com.apple.dock showMissionControlGestureEnabled bool true
+
+# Hot corner codes: 3 = Application Windows, 4 = Desktop,
+# 5 = Start Screen Saver, 14 = Quick Note. Modifier 0 = no modifier key.
+write_default com.apple.dock wvous-bl-corner int 3
+write_default com.apple.dock wvous-bl-modifier int 0
+write_default com.apple.dock wvous-br-corner int 4
+write_default com.apple.dock wvous-br-modifier int 0
+write_default com.apple.dock wvous-tl-corner int 5
+write_default com.apple.dock wvous-tl-modifier int 0
+write_default com.apple.dock wvous-tr-corner int 14
+write_default com.apple.dock wvous-tr-modifier int 0
+
+# Trackpad code: 2 = four-finger vertical swipes for Mission Control/App Expose.
+write_default com.apple.AppleMultitouchTrackpad TrackpadFourFingerVertSwipeGesture int 2
+write_default com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerVertSwipeGesture int 2
 
 write_default com.apple.finder FinderSpawnTab bool false
 write_default com.apple.finder FXArrangeGroupViewBy string Name
