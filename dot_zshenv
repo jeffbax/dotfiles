@@ -1,0 +1,8 @@
+case "$-" in
+*i*) ;;
+*)
+  if [ -r "$HOME/.config/zsh/chezmoi/mise.zsh" ]; then
+    . "$HOME/.config/zsh/chezmoi/mise.zsh"
+  fi
+  ;;
+esac

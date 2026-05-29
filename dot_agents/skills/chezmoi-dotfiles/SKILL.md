@@ -28,6 +28,7 @@ description: Use when managing these chezmoi dotfiles, including profile-aware H
 
 - `dot_config/fish/config.fish.tmpl` owns the top-level fish config and sources profile buckets.
 - Put reusable fish snippets under `dot_config/fish/chezmoi/common`; put profile-specific snippets in matching profile buckets.
+- Keep durable environment behavior aligned across fish, zsh, and bash. When adding or changing shared toolchain environment such as mise activation, Node certificate settings, or PostgreSQL PATH handling, update the fish snippets and the shared POSIX shell helpers together unless a shell-specific reason is documented.
 - Keep fish environment setup idempotent and guarded with `type -q`, `command -sq`, `test -d`, or `test -x`.
 - Use Fisher plugin lists as source of truth. Do not commit Fisher-generated plugin files, functions, completions, or themes.
 - Format fish files with `fish_indent`; format plain shell files with `shfmt -i 2`.

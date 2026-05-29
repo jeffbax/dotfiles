@@ -42,9 +42,12 @@ Homebrew packages are split by profile and OS. Bootstrap always installs the
 common packages first, then the selected profile, using `brew bundle
 --no-upgrade`.
 
-Fish owns the interactive shell entrypoint, profile buckets, Fisher plugin
-lists, and a small set of reusable functions/completions. Generated Fisher
-plugin output is intentionally not checked in.
+Shell startup files keep Homebrew login setup separate from interactive tool
+activation. Fish owns its profile buckets, Fisher plugin lists, and a small set
+of reusable functions/completions; zsh and bash own minimal startup files that
+source shared toolchain helpers. Zsh also loads a one-shot mise environment for
+non-interactive IDE run configs. Generated Fisher plugin output is intentionally
+not checked in.
 
 Editor behavior is managed at two levels: portable text rules live in
 `.editorconfig`, while macOS-only application defaults are written with small

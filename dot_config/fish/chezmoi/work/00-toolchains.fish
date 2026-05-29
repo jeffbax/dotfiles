@@ -7,18 +7,6 @@ else if test "$NODE_USE_SYSTEM_CA" != 1
     set -Ux NODE_USE_SYSTEM_CA 1
 end
 
-if type -q rbenv
-    rbenv init - fish | source
-end
-
-if type -q volta
-    set -gx VOLTA_HOME "$HOME/.volta"
-
-    if test -d "$VOLTA_HOME/bin"
-        fish_add_path --global --move --prepend "$VOLTA_HOME/bin"
-    end
-end
-
 if test -x /opt/homebrew/opt/postgresql@17/bin/psql
     fish_add_path --global --move --prepend /opt/homebrew/opt/postgresql@17/bin
 end

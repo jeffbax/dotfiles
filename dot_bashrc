@@ -1,0 +1,3 @@
+if [ -r "$HOME/.config/bash/chezmoi/mise.bash" ]; then
+  . "$HOME/.config/bash/chezmoi/mise.bash"
+fi
