@@ -40,7 +40,10 @@ profile.
 
 Homebrew packages are split by profile and OS. Bootstrap always installs the
 common packages first, then the selected profile, using `brew bundle
---no-upgrade`.
+--no-upgrade`. Cask app bundles default to `~/Applications` through Homebrew's
+user environment file and Brewfile `cask_args`, with explicit `/Applications`
+exceptions for apps that expect system-wide placement. Casks that use
+privileged package installers may still require admin credentials.
 
 Shell startup files keep Homebrew login setup separate from interactive tool
 activation. Fish owns its profile buckets, Fisher plugin lists, and a small set

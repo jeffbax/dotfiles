@@ -1,14 +1,16 @@
-cask "airserver", args: { appdir: "/Applications" }
-cask "audio-hijack", args: { appdir: "/Applications" }
-cask "crossover", args: { appdir: "/Applications" }
-cask "cyberduck", args: { appdir: "/Applications" }
-cask "diffusionbee", args: { appdir: "/Applications" }
-cask "discord", args: { appdir: "/Applications" }
-cask "handbrake-app", args: { appdir: "/Applications" }
-cask "little-snitch", args: { appdir: "/Applications" }
-cask "spotify", args: { appdir: "/Applications" }
-cask "steam", args: { appdir: "/Applications" }
-cask "transmission", args: { appdir: "/Applications" }
+cask_args appdir: "~/Applications"
+
+cask "airserver"
+cask "audio-hijack"
+cask "crossover"
+cask "cyberduck"
+cask "diffusionbee"
+cask "discord"
+cask "handbrake-app"
+cask "little-snitch"
+cask "spotify"
+cask "steam"
+cask "transmission"
 
 mas "CardPointers", id: 1472875808
 mas "djay Pro", id: 947578651

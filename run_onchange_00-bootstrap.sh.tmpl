@@ -23,12 +23,12 @@ install_homebrew() {
   fi
 
   case "$os" in
-    darwin|linux)
-      ;;
-    *)
-      log "Skipping Homebrew setup on unsupported OS: $os"
-      exit 0
-      ;;
+  darwin | linux)
+    ;;
+  *)
+    log "Skipping Homebrew setup on unsupported OS: $os"
+    exit 0
+    ;;
   esac
 
   if ! command -v curl >/dev/null 2>&1; then
@@ -65,6 +65,16 @@ run_brew_bundle() {
 
   log "Running brew bundle --no-upgrade --file $brewfile"
   brew bundle --no-upgrade --file "$brewfile"
+}
+
+configure_homebrew_cask_appdir() {
+  if [ "$os" != "darwin" ]; then
+    return 0
+  fi
+
+  mkdir -p "$HOME/Applications"
+  HOMEBREW_CASK_OPTS="--appdir=$HOME/Applications"
+  export HOMEBREW_CASK_OPTS
 }
 
 current_login_shell() {
@@ -148,6 +158,7 @@ set_fish_as_default_shell() {
 
 install_homebrew
 load_homebrew_env
+configure_homebrew_cask_appdir
 
 if ! command -v brew >/dev/null 2>&1; then
   log "Homebrew is not available after setup."
@@ -157,13 +168,13 @@ fi
 brew_profile="${CHEZMOI_BREW_PROFILE:-$configured_brew_profile}"
 
 case "$brew_profile" in
-  common|personal|work)
-    ;;
-  *)
-    log "Invalid Homebrew profile: $brew_profile"
-    log "Use one of: common, personal, work"
-    exit 1
-    ;;
+common | personal | work)
+  ;;
+*)
+  log "Invalid Homebrew profile: $brew_profile"
+  log "Use one of: common, personal, work"
+  exit 1
+  ;;
 esac
 
 run_brew_bundle "$source_dir/Brewfile.common"

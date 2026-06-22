@@ -1,21 +1,23 @@
 brew "mas"
 
+cask_args appdir: "~/Applications"
+
 cask "1password", args: { appdir: "/Applications" }
 cask "1password-cli"
-cask "alfred", args: { appdir: "/Applications" }
+cask "alfred"
 cask "codeedit"
 cask "copilot-cli"
 cask "firefox@developer-edition"
 cask "github"
-cask "imageoptim", args: { appdir: "/Applications" }
-cask "juxtacode", args: { appdir: "/Applications" }
-cask "netnewswire", args: { appdir: "/Applications" }
-cask "nova", args: { appdir: "/Applications" }
+cask "imageoptim"
+cask "juxtacode"
+cask "netnewswire"
+cask "nova"
 cask "quitter"
 cask "setapp", args: { appdir: "/Applications" }
 cask "tolaria"
 cask "visual-studio-code", args: { appdir: "/Applications" }
-cask "vlc", args: { appdir: "/Applications" }
+cask "vlc"
 
 mas "1Password for Safari", id: 1569813296
 mas "Bumpr", id: 1166066070
