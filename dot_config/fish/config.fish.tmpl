@@ -1,7 +1,10 @@
-{{- $brewProfile := (index . "brewProfile" | default "common") -}}
+if test -x /opt/homebrew/bin/brew
+    /opt/homebrew/bin/brew shellenv fish | source
+end
+
 if status is-interactive
     set -l chezmoi_fish_dir "$HOME/.config/fish/chezmoi"
-    set -g chezmoi_profile {{ $brewProfile | quote }}
+    set -g chezmoi_profile {{ (index . "brewProfile" | default "common") | quote }}
 
     set -l chezmoi_fish_profiles common
     switch "$chezmoi_profile"

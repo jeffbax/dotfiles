@@ -77,6 +77,16 @@ configure_homebrew_cask_appdir() {
   export HOMEBREW_CASK_OPTS
 }
 
+trust_homebrew_taps() {
+  case "$brew_profile" in
+  work)
+    log "Trusting Homebrew tap heroku/brew..."
+    brew tap heroku/brew
+    brew trust --tap heroku/brew
+    ;;
+  esac
+}
+
 current_login_shell() {
   user_name="$(id -un)"
 
@@ -181,6 +191,7 @@ run_brew_bundle "$source_dir/Brewfile.common"
 run_brew_bundle "$source_dir/Brewfile.common.$os"
 
 if [ "$brew_profile" != "common" ]; then
+  trust_homebrew_taps
   run_brew_bundle "$source_dir/Brewfile.$brew_profile"
   run_brew_bundle "$source_dir/Brewfile.$brew_profile.$os"
 else

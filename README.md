@@ -44,8 +44,11 @@ common packages first, then the selected profile, using `brew bundle
 user environment file and Brewfile `cask_args`, with explicit `/Applications`
 exceptions for apps that expect system-wide placement. Casks that use
 privileged package installers may still require admin credentials.
+Work profile bootstrap also trusts the Heroku Homebrew tap before installing
+work packages; Homebrew trust state remains external local state rather than a
+checked-in dotfile.
 
-Shell startup files keep Homebrew login setup separate from interactive tool
+Shell startup files keep Homebrew login setup before interactive tool
 activation. Fish owns its profile buckets, Fisher plugin lists, and a small set
 of reusable functions/completions; zsh and bash own minimal startup files that
 source shared toolchain helpers. Zsh also loads a one-shot mise environment for
