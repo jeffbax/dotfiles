@@ -13,3 +13,7 @@ elif [ -x /opt/homebrew/bin/mise ]; then
   *) eval "$(/opt/homebrew/bin/mise env -q -s bash)" ;;
   esac
 fi
+
+if [ -r "$HOME/.config/shell/chezmoi/common/env.sh" ]; then
+  . "$HOME/.config/shell/chezmoi/common/env.sh"
+fi
