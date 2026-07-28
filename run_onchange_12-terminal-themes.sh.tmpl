@@ -71,33 +71,18 @@ initialize_preferences() {
   return 1
 }
 
-set_plist_string() {
+set_plist_value() {
   plist="$1"
   entry="$2"
-  value="$3"
+  type="$3"
+  value="$4"
 
-  if ! "$plist_buddy" -c "Set $entry \"$value\"" "$plist" 2>/dev/null; then
-    "$plist_buddy" -c "Add $entry string \"$value\"" "$plist"
+  if [ "$type" = string ]; then
+    value="\"$value\""
   fi
-}
-
-set_plist_bool() {
-  plist="$1"
-  entry="$2"
-  value="$3"
 
   if ! "$plist_buddy" -c "Set $entry $value" "$plist" 2>/dev/null; then
-    "$plist_buddy" -c "Add $entry bool $value" "$plist"
-  fi
-}
-
-set_plist_integer() {
-  plist="$1"
-  entry="$2"
-  value="$3"
-
-  if ! "$plist_buddy" -c "Set $entry $value" "$plist" 2>/dev/null; then
-    "$plist_buddy" -c "Add $entry integer $value" "$plist"
+    "$plist_buddy" -c "Add $entry $type $value" "$plist"
   fi
 }
 
@@ -123,8 +108,8 @@ import_terminal_themes() {
     return 1
   fi
 
-  set_plist_string "$preferences" ':"Default Window Settings"' "$default_theme"
-  set_plist_string "$preferences" ':"Startup Window Settings"' "$default_theme"
+  set_plist_value "$preferences" ':"Default Window Settings"' string "$default_theme"
+  set_plist_value "$preferences" ':"Startup Window Settings"' string "$default_theme"
   defaults import com.apple.Terminal "$preferences"
 }
 
@@ -194,13 +179,13 @@ apply_iterm_default_theme() {
 
   log "Applying $default_theme to the iTerm2 default profile."
   "$plist_buddy" -c "Merge \"$theme\" :\"New Bookmarks\":$profile_index" "$preferences"
-  set_plist_string "$preferences" ":\"New Bookmarks\":$profile_index:\"Normal Font\"" "$iterm_font"
-  set_plist_string "$preferences" ":\"New Bookmarks\":$profile_index:\"Non Ascii Font\"" "$iterm_font"
-  set_plist_bool "$preferences" ":\"New Bookmarks\":$profile_index:\"Use Non-ASCII Font\"" false
-  set_plist_bool "$preferences" ":\"New Bookmarks\":$profile_index:\"ASCII Ligatures\"" true
-  set_plist_bool "$preferences" ":\"New Bookmarks\":$profile_index:\"Use Separate Colors for Light and Dark Mode\"" false
-  set_plist_integer "$preferences" ":\"New Bookmarks\":$profile_index:\"Option Key Sends\"" 2
-  set_plist_integer "$preferences" ":\"New Bookmarks\":$profile_index:\"Right Option Key Sends\"" 2
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"Normal Font\"" string "$iterm_font"
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"Non Ascii Font\"" string "$iterm_font"
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"Use Non-ASCII Font\"" bool false
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"ASCII Ligatures\"" bool true
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"Use Separate Colors for Light and Dark Mode\"" bool false
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"Option Key Sends\"" integer 2
+  set_plist_value "$preferences" ":\"New Bookmarks\":$profile_index:\"Right Option Key Sends\"" integer 2
   defaults import com.googlecode.iterm2 "$preferences"
 }
 
@@ -213,10 +198,7 @@ if [ ! -f "$terminal_font_path" ]; then
 fi
 
 terminal_preferences="$temporary_dir/com.apple.Terminal.plist"
-if ! initialize_preferences com.apple.Terminal Terminal ':"Window Settings"' "$terminal_preferences"; then
-  log "Could not configure Terminal because its preferences are unavailable."
-  exit 1
-fi
+initialize_preferences com.apple.Terminal Terminal ':"Window Settings"' "$terminal_preferences"
 import_terminal_themes "$terminal_preferences"
 
 if [ ! -d /Applications/iTerm.app ] && [ ! -d "$HOME/Applications/iTerm.app" ]; then
@@ -225,10 +207,7 @@ if [ ! -d /Applications/iTerm.app ] && [ ! -d "$HOME/Applications/iTerm.app" ]; 
 fi
 
 iterm_preferences="$temporary_dir/com.googlecode.iterm2.plist"
-if ! initialize_preferences com.googlecode.iterm2 iTerm ':"New Bookmarks"' "$iterm_preferences"; then
-  log "Could not configure iTerm2 because its preferences are unavailable."
-  exit 1
-fi
+initialize_preferences com.googlecode.iterm2 iTerm ':"New Bookmarks"' "$iterm_preferences"
 import_iterm_presets "$iterm_preferences"
 apply_iterm_default_theme "$iterm_preferences"
 

@@ -15,24 +15,13 @@ if ! command -v wt >/dev/null 2>&1; then
   exit 0
 fi
 
-has_worktrunk_marketplace() {
-  codex plugin marketplace list 2>/dev/null | awk '
+if codex plugin marketplace list 2>/dev/null | awk '
     NR > 1 && $1 == "worktrunk" { found = 1 }
     END { exit found ? 0 : 1 }
-  '
-}
-
-if has_worktrunk_marketplace; then
+'; then
   log "Worktrunk Codex marketplace is already configured."
   exit 0
 fi
 
 log "Adding Worktrunk Codex marketplace..."
 codex plugin marketplace add max-sixty/worktrunk
-
-if has_worktrunk_marketplace; then
-  log "Worktrunk Codex marketplace configured."
-else
-  log "Worktrunk Codex marketplace was not found after install."
-  exit 1
-fi

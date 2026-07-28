@@ -67,26 +67,6 @@ run_brew_bundle() {
   brew bundle --no-upgrade --file "$brewfile"
 }
 
-configure_homebrew_cask_appdir() {
-  if [ "$os" != "darwin" ]; then
-    return 0
-  fi
-
-  mkdir -p "$HOME/Applications"
-  HOMEBREW_CASK_OPTS="--appdir=$HOME/Applications"
-  export HOMEBREW_CASK_OPTS
-}
-
-trust_homebrew_taps() {
-  case "$brew_profile" in
-  work)
-    log "Trusting Homebrew tap heroku/brew..."
-    brew tap heroku/brew
-    brew trust --tap heroku/brew
-    ;;
-  esac
-}
-
 current_login_shell() {
   user_name="$(id -un)"
 
@@ -168,11 +148,16 @@ set_fish_as_default_shell() {
 
 install_homebrew
 load_homebrew_env
-configure_homebrew_cask_appdir
 
 if ! command -v brew >/dev/null 2>&1; then
   log "Homebrew is not available after setup."
   exit 1
+fi
+
+if [ "$os" = "darwin" ]; then
+  mkdir -p "$HOME/Applications"
+  HOMEBREW_CASK_OPTS="--appdir=$HOME/Applications"
+  export HOMEBREW_CASK_OPTS
 fi
 
 brew_profile="${CHEZMOI_BREW_PROFILE:-$configured_brew_profile}"
@@ -191,7 +176,12 @@ run_brew_bundle "$source_dir/Brewfile.common"
 run_brew_bundle "$source_dir/Brewfile.common.$os"
 
 if [ "$brew_profile" != "common" ]; then
-  trust_homebrew_taps
+  if [ "$brew_profile" = "work" ]; then
+    log "Trusting Homebrew tap heroku/brew..."
+    brew tap heroku/brew
+    brew trust --tap heroku/brew
+  fi
+
   run_brew_bundle "$source_dir/Brewfile.$brew_profile"
   run_brew_bundle "$source_dir/Brewfile.$brew_profile.$os"
 else

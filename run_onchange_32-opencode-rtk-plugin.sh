@@ -15,5 +15,5 @@ if ! command -v opencode >/dev/null 2>&1; then
   exit 0
 fi
 
-log "Installing or updating OpenCode RTK plugin..."
+log "Reconciling OpenCode RTK plugin..."
 rtk init --global --opencode

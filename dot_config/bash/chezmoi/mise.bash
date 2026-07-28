@@ -2,17 +2,18 @@ if [ -r "$HOME/.config/shell/chezmoi/work/env.sh" ]; then
   . "$HOME/.config/shell/chezmoi/work/env.sh"
 fi
 
-if command -v mise >/dev/null 2>&1; then
+mise_path="$(command -v mise 2>/dev/null || true)"
+if [ -z "$mise_path" ] && [ -x /opt/homebrew/bin/mise ]; then
+  mise_path=/opt/homebrew/bin/mise
+fi
+
+if [ -n "$mise_path" ]; then
   case "$-" in
-  *i*) eval "$(mise activate bash)" ;;
-  *) eval "$(mise env -q -s bash)" ;;
-  esac
-elif [ -x /opt/homebrew/bin/mise ]; then
-  case "$-" in
-  *i*) eval "$(/opt/homebrew/bin/mise activate bash)" ;;
-  *) eval "$(/opt/homebrew/bin/mise env -q -s bash)" ;;
+  *i*) eval "$("$mise_path" activate bash)" ;;
+  *) eval "$("$mise_path" env -q -s bash)" ;;
   esac
 fi
+unset mise_path
 
 if [ -r "$HOME/.config/shell/chezmoi/common/env.sh" ]; then
   . "$HOME/.config/shell/chezmoi/common/env.sh"
