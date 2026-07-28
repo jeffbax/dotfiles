@@ -28,17 +28,6 @@ delete_default_if_exists() {
   fi
 }
 
-set_plist_bool() {
-  plist="$1"
-  entry="$2"
-  value="$3"
-
-  printf 'Setting %s %s = %s\n' "$plist" "$entry" "$value"
-  if ! /usr/libexec/PlistBuddy -c "Set $entry $value" "$plist" 2>/dev/null; then
-    /usr/libexec/PlistBuddy -c "Add $entry bool $value" "$plist"
-  fi
-}
-
 # Auto appearance; deleting AppleInterfaceStyle clears a forced light/dark mode.
 write_default NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically bool true
 
@@ -122,9 +111,6 @@ write_default com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey bool tr
 write_default com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled bool true
 write_default NSGlobalDomain WebKitDeveloperExtras bool true
 
-write_default com.apple.Terminal "Default Window Settings" string "Homebrew"
-write_default com.apple.Terminal "Startup Window Settings" string "Homebrew"
-
 write_default com.panic.Nova DefaultSyntaxMode string plain-text
 write_default com.panic.Nova TabWidth int 2
 write_default com.panic.Nova IndentationStyle int 0
@@ -137,11 +123,3 @@ write_default com.panic.Nova ReformatInsertedText bool true
 write_default com.panic.Nova EnsureTrailingNewline bool true
 write_default com.panic.Nova TrimTrailingWhitespace bool true
 write_default com.panic.Nova TrimTrailingWhitespaceInEmptyLines bool true
-
-terminal_plist="$HOME/Library/Preferences/com.apple.Terminal.plist"
-
-if /usr/libexec/PlistBuddy -c 'Print :"Window Settings":Homebrew' "$terminal_plist" >/dev/null 2>&1; then
-  set_plist_bool "$terminal_plist" ':"Window Settings":Homebrew:useOptionAsMetaKey' true
-else
-  printf '%s\n' "Skipping Terminal useOptionAsMetaKey; profile not found: Homebrew"
-fi

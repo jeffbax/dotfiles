@@ -57,7 +57,9 @@ not checked in.
 
 Editor behavior is managed at two levels: portable text rules live in
 `.editorconfig`, while macOS-only application defaults are written with small
-idempotent scripts.
+idempotent scripts. Source-controlled Terminal and iTerm2 themes are imported
+during macOS setup, with FishTank and the Homebrew-managed FiraCode Nerd Font
+Mono configured as the defaults for both apps.
 
 Agent tooling is shared through `~/.agents/skills`, with Codex and OpenCode
 pointing at that shared skill bucket. Tool integrations are installed with

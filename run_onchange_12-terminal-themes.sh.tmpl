@@ -1,0 +1,235 @@
+#!/bin/sh
+set -eu
+
+# Terminal themes checksum: {{ output "sh" "-c" "cd \"$1\" && find terminal-themes iterm2-themes -type f -exec cksum {} + | LC_ALL=C sort" "theme-checksum" .chezmoi.sourceDir | sha256sum }}
+
+os="{{ .chezmoi.os }}"
+source_dir="{{ .chezmoi.sourceDir }}"
+plist_buddy=/usr/libexec/PlistBuddy
+terminal_font_path="$HOME/Library/Fonts/FiraCodeNerdFontMono-Regular.ttf"
+iterm_font="FiraCodeNFM-Reg 12"
+default_theme=FishTank
+
+if [ "$os" != "darwin" ]; then
+  printf '%s\n' "Skipping terminal theme setup on unsupported OS: $os"
+  exit 0
+fi
+
+log() {
+  printf '%s\n' "$*"
+}
+
+validate_theme() {
+  theme="$1"
+
+  if ! plutil -lint "$theme" >/dev/null; then
+    log "Invalid terminal theme plist: $theme"
+    return 1
+  fi
+}
+
+validate_plist_key() {
+  key="$1"
+
+  case "$key" in
+  *:* | *\"*)
+    log "Unsupported plist key in terminal theme: $key"
+    return 1
+    ;;
+  esac
+}
+
+initialize_preferences() {
+  domain="$1"
+  app_name="$2"
+  required_entry="$3"
+  export_path="$4"
+
+  if defaults export "$domain" "$export_path" >/dev/null 2>&1 &&
+    "$plist_buddy" -c "Print $required_entry" "$export_path" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  log "Initializing $app_name preferences..."
+  if ! open -gj -a "$app_name"; then
+    log "Could not launch $app_name to initialize its preferences."
+    return 1
+  fi
+
+  attempts=0
+  while [ "$attempts" -lt 15 ]; do
+    if defaults export "$domain" "$export_path" >/dev/null 2>&1 &&
+      "$plist_buddy" -c "Print $required_entry" "$export_path" >/dev/null 2>&1; then
+      return 0
+    fi
+
+    attempts=$((attempts + 1))
+    sleep 1
+  done
+
+  log "$app_name preferences were not initialized in time."
+  return 1
+}
+
+set_plist_string() {
+  plist="$1"
+  entry="$2"
+  value="$3"
+
+  if ! "$plist_buddy" -c "Set $entry \"$value\"" "$plist" 2>/dev/null; then
+    "$plist_buddy" -c "Add $entry string \"$value\"" "$plist"
+  fi
+}
+
+set_plist_bool() {
+  plist="$1"
+  entry="$2"
+  value="$3"
+
+  if ! "$plist_buddy" -c "Set $entry $value" "$plist" 2>/dev/null; then
+    "$plist_buddy" -c "Add $entry bool $value" "$plist"
+  fi
+}
+
+set_plist_integer() {
+  plist="$1"
+  entry="$2"
+  value="$3"
+
+  if ! "$plist_buddy" -c "Set $entry $value" "$plist" 2>/dev/null; then
+    "$plist_buddy" -c "Add $entry integer $value" "$plist"
+  fi
+}
+
+import_terminal_themes() {
+  preferences="$1"
+  themes_dir="$source_dir/terminal-themes"
+
+  for theme in "$themes_dir"/*.terminal; do
+    [ -f "$theme" ] || continue
+    validate_theme "$theme"
+
+    profile_name=$(plutil -extract name raw -o - "$theme")
+    validate_plist_key "$profile_name"
+
+    log "Importing Terminal theme: $profile_name"
+    "$plist_buddy" -c "Delete :\"Window Settings\":\"$profile_name\"" "$preferences" >/dev/null 2>&1 || true
+    "$plist_buddy" -c "Add :\"Window Settings\":\"$profile_name\" dict" "$preferences"
+    "$plist_buddy" -c "Merge \"$theme\" :\"Window Settings\":\"$profile_name\"" "$preferences"
+  done
+
+  if ! "$plist_buddy" -c "Print :\"Window Settings\":\"$default_theme\"" "$preferences" >/dev/null 2>&1; then
+    log "Required Terminal theme was not imported: $default_theme"
+    return 1
+  fi
+
+  set_plist_string "$preferences" ':"Default Window Settings"' "$default_theme"
+  set_plist_string "$preferences" ':"Startup Window Settings"' "$default_theme"
+  defaults import com.apple.Terminal "$preferences"
+}
+
+import_iterm_presets() {
+  preferences="$1"
+  themes_dir="$source_dir/iterm2-themes"
+
+  if ! "$plist_buddy" -c 'Print :"Custom Color Presets"' "$preferences" >/dev/null 2>&1; then
+    "$plist_buddy" -c 'Add :"Custom Color Presets" dict' "$preferences"
+  fi
+
+  for theme in "$themes_dir"/*.itermcolors; do
+    [ -f "$theme" ] || continue
+    validate_theme "$theme"
+
+    preset_name=${theme##*/}
+    preset_name=${preset_name%.itermcolors}
+    validate_plist_key "$preset_name"
+
+    log "Importing iTerm2 color preset: $preset_name"
+    "$plist_buddy" -c "Delete :\"Custom Color Presets\":\"$preset_name\"" "$preferences" >/dev/null 2>&1 || true
+    "$plist_buddy" -c "Add :\"Custom Color Presets\":\"$preset_name\" dict" "$preferences"
+    "$plist_buddy" -c "Merge \"$theme\" :\"Custom Color Presets\":\"$preset_name\"" "$preferences"
+  done
+}
+
+find_iterm_default_profile() {
+  preferences="$1"
+  default_guid=$("$plist_buddy" -c 'Print :"Default Bookmark Guid"' "$preferences")
+  profile_index=0
+
+  while profile_guid=$("$plist_buddy" -c "Print :\"New Bookmarks\":$profile_index:Guid" "$preferences" 2>/dev/null); do
+    if [ "$profile_guid" = "$default_guid" ]; then
+      printf '%s\n' "$profile_index"
+      return 0
+    fi
+
+    profile_index=$((profile_index + 1))
+  done
+
+  log "Could not find the iTerm2 default profile: $default_guid" >&2
+  return 1
+}
+
+apply_iterm_default_theme() {
+  preferences="$1"
+  theme="$source_dir/iterm2-themes/$default_theme.itermcolors"
+
+  if [ ! -f "$theme" ]; then
+    log "Required iTerm2 color preset was not found: $theme"
+    return 1
+  fi
+
+  profile_index=$(find_iterm_default_profile "$preferences")
+
+  set -- \
+    "Ansi 0 Color" "Ansi 1 Color" "Ansi 2 Color" "Ansi 3 Color" \
+    "Ansi 4 Color" "Ansi 5 Color" "Ansi 6 Color" "Ansi 7 Color" \
+    "Ansi 8 Color" "Ansi 9 Color" "Ansi 10 Color" "Ansi 11 Color" \
+    "Ansi 12 Color" "Ansi 13 Color" "Ansi 14 Color" "Ansi 15 Color" \
+    "Background Color" "Bold Color" "Cursor Color" "Cursor Text Color" \
+    "Foreground Color" "Selected Text Color" "Selection Color"
+
+  for color_key in "$@"; do
+    "$plist_buddy" -c "Delete :\"New Bookmarks\":$profile_index:\"$color_key\"" "$preferences" >/dev/null 2>&1 || true
+  done
+
+  log "Applying $default_theme to the iTerm2 default profile."
+  "$plist_buddy" -c "Merge \"$theme\" :\"New Bookmarks\":$profile_index" "$preferences"
+  set_plist_string "$preferences" ":\"New Bookmarks\":$profile_index:\"Normal Font\"" "$iterm_font"
+  set_plist_string "$preferences" ":\"New Bookmarks\":$profile_index:\"Non Ascii Font\"" "$iterm_font"
+  set_plist_bool "$preferences" ":\"New Bookmarks\":$profile_index:\"Use Non-ASCII Font\"" false
+  set_plist_bool "$preferences" ":\"New Bookmarks\":$profile_index:\"ASCII Ligatures\"" true
+  set_plist_bool "$preferences" ":\"New Bookmarks\":$profile_index:\"Use Separate Colors for Light and Dark Mode\"" false
+  set_plist_integer "$preferences" ":\"New Bookmarks\":$profile_index:\"Option Key Sends\"" 2
+  set_plist_integer "$preferences" ":\"New Bookmarks\":$profile_index:\"Right Option Key Sends\"" 2
+  defaults import com.googlecode.iterm2 "$preferences"
+}
+
+temporary_dir=$(mktemp -d)
+trap 'rm -rf "$temporary_dir"' EXIT HUP INT TERM
+
+if [ ! -f "$terminal_font_path" ]; then
+  log "Required terminal font is not installed: $terminal_font_path"
+  exit 1
+fi
+
+terminal_preferences="$temporary_dir/com.apple.Terminal.plist"
+if ! initialize_preferences com.apple.Terminal Terminal ':"Window Settings"' "$terminal_preferences"; then
+  log "Could not configure Terminal because its preferences are unavailable."
+  exit 1
+fi
+import_terminal_themes "$terminal_preferences"
+
+if [ ! -d /Applications/iTerm.app ] && [ ! -d "$HOME/Applications/iTerm.app" ]; then
+  log "iTerm2 is not installed; skipping iTerm2 color preset setup."
+  exit 0
+fi
+
+iterm_preferences="$temporary_dir/com.googlecode.iterm2.plist"
+if ! initialize_preferences com.googlecode.iterm2 iTerm ':"New Bookmarks"' "$iterm_preferences"; then
+  log "Could not configure iTerm2 because its preferences are unavailable."
+  exit 1
+fi
+import_iterm_presets "$iterm_preferences"
+apply_iterm_default_theme "$iterm_preferences"
+
+log "Restart open terminal applications to load the reconciled themes."
