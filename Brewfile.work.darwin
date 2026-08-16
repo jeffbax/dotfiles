@@ -1,6 +1,5 @@
 cask_args appdir: "~/Applications"
 
-cask "codex"
 cask "google-chrome", args: { appdir: "/Applications" }
 cask "google-drive"
 cask "notion"

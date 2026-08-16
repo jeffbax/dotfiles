@@ -176,6 +176,10 @@ run_brew_bundle "$source_dir/Brewfile.common"
 run_brew_bundle "$source_dir/Brewfile.common.$os"
 
 if [ "$brew_profile" != "common" ]; then
+  log "Trusting Homebrew tap asmvik/formulae..."
+  brew tap asmvik/formulae
+  brew trust --tap asmvik/formulae
+
   if [ "$brew_profile" = "work" ]; then
     log "Trusting Homebrew tap heroku/brew..."
     brew tap heroku/brew
