@@ -1,1 +1,5 @@
+brew "colima"
+brew "hermes-agent"
 brew "opencode"
+brew "pi-coding-agent"
+brew "signal-cli"
