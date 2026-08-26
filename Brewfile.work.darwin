@@ -2,6 +2,6 @@ cask_args appdir: "~/Applications"
 
 cask "google-chrome", args: { appdir: "/Applications" }
 cask "google-drive"
-cask "notion"
+# cask "notion"
 cask "podman-desktop"
 # cask "rubymine"
