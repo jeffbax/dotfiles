@@ -1,3 +1,25 @@
-# Global Codex Instructions
+# Global Instructions
 
 @RTK.md
+
+## Communication
+
+- Keep replies, comments, and commit messages concise and deliberate.
+- Avoid praise, validation, and superlatives. Be direct and candid.
+
+## Coding
+
+- Before taking any action that changes a live or production system, explain the
+  planned change and expected impact, then obtain my _explicit_ approval.
+- Before adding new behavior or abstractions, check the relevant code for existing
+  implementations, conventions, and tests to reuse or extend.
+- Keep changes focused; avoid unrelated refactors or cleanup unless asked.
+- Add concise comments for non-obvious constraints or decisions in changed code;
+  explain why, not what the code does.
+- In commit messages, change summaries, and PR descriptions, _explain what changed
+  and why; let the code explain how_.
+- Name recurring or meaningful literals; keep obvious one-off values inline.
+- When _practical_, reproduce bugs with a failing test before fixing them.
+- Run relevant project formatters and linters on changed files when available.
+- Run the narrowest relevant tests after coding; broaden verification in
+  proportion to the change’s risk and reach.
