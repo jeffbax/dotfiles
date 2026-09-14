@@ -1,0 +1,5 @@
+/.envrc
+/.env.op
+/.env.local
+/.idea
+/mise.local.toml

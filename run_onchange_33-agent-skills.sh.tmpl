@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+
+log() {
+  printf '%s\n' "$*"
+}
+
+if ! command -v npx >/dev/null 2>&1; then
+  log "npx is not installed; skipping external agent skill setup."
+  exit 0
+fi
+
+cat <<'AGENT_SKILLS' | while IFS=' ' read -r source skill
+{{ include ".chezmoitemplates/agent_skills.common" -}}
+{{- $brewProfile := (index . "brewProfile" | default "common") -}}
+{{- if eq $brewProfile "personal" }}
+{{ include ".chezmoitemplates/agent_skills.personal" -}}
+{{- else if eq $brewProfile "work" }}
+{{ include ".chezmoitemplates/agent_skills.work" -}}
+{{- end }}
+AGENT_SKILLS
+do
+  case "$source" in
+  "" | \#*)
+    continue
+    ;;
+  esac
+
+  if [ -z "$skill" ]; then
+    log "Invalid external agent skill entry: $source" >&2
+    exit 1
+  fi
+
+  set -- npx --yes skills@latest add "$source" --skill "$skill" --global --yes \
+    --agent codex --agent opencode
+
+  log "Reconciling external agent skill: $skill"
+  "$@"
+done

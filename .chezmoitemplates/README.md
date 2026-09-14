@@ -10,6 +10,10 @@ Generated plugin files should not be copied into chezmoi.
 
 Put Codex plugin names in `codex_plugins.common`, one per line.
 
+Put external agent skills in `agent_skills.common` or the matching profile
+file, one `<source> <skill-name>` pair per line. Chezmoi installs those skills
+with `npx skills` for Codex and OpenCode.
+
 Chezmoi owns `~/.config/fish/config.fish`. Avoid running tool setup commands
 that mutate that file. Instead, put tool initialization in the appropriate
 bucket under `dot_config/fish/chezmoi/`.

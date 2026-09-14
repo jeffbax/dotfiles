@@ -52,7 +52,8 @@ Shell startup files keep Homebrew login setup before interactive tool
 activation. Fish owns its profile buckets, Fisher plugin lists, and a small set
 of reusable functions/completions; zsh and bash own minimal startup files that
 source shared toolchain helpers. Zsh also loads a one-shot mise environment for
-non-interactive IDE run configs. Generated Fisher plugin output is intentionally
+non-interactive IDE run configs. Common shell setup puts `~/.local/bin` on the
+path for managed user commands. Generated Fisher plugin output is intentionally
 not checked in.
 
 Editor behavior is managed at two levels: portable text rules live in
@@ -62,19 +63,26 @@ during macOS setup, with FishTank and the Homebrew-managed FiraCode Nerd Font
 Mono configured as the defaults for both apps.
 
 Agent tooling is shared through `~/.agents/skills`, with Codex and OpenCode
-pointing at that shared skill bucket. Tool integrations are installed with
+pointing at that shared skill bucket. External skills are selected by the same
+`common`/`personal`/`work` profile model and installed for Codex and OpenCode
+with `npx skills`; applying a profile adds or refreshes cataloged skills but
+never removes manually installed ones. Tool integrations are installed with
 idempotent scripts that check for the relevant binary and no-op with a clear
 skip message when absent.
 
 This repo also configures a repo-local Git hook path. The pre-commit hook scans
 staged content with `gitleaks` and runs the language formatters we rely on for
-fish and shell files.
+fish and shell files. Git uses its XDG layout: personal global exclusions are
+managed through `~/.config/git/ignore`, while `~/.config/git/config` remains
+local to each machine.
 
 ## Not Managed
 
 These are deliberately outside chezmoi ownership:
 
 - Secrets, private keys, resolved tokens, and secret-bearing env files
+- Local Git identity, signing, credential-helper, and generated configuration
+  in `~/.config/git/config`
 - Local Codex config, auth, trust, cache, session, and database state
 - Generated plugin output and other reproducible tool-generated files
 - Whole macOS preference plists

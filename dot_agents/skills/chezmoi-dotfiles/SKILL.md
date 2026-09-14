@@ -28,6 +28,8 @@ description: Use when managing these chezmoi dotfiles, including profile-aware H
 
 - `dot_config/fish/config.fish.tmpl` owns the top-level fish config and sources profile buckets.
 - Put reusable fish snippets under `dot_config/fish/chezmoi/common`; put profile-specific snippets in matching profile buckets.
+- Prefer portable POSIX shell scripts under `~/.local/bin` for reusable commands that should work across fish, zsh, and bash.
+- Use shell-specific functions when they provide a concrete advantage, such as transparently shadowing an executable so `command <name>` can bypass the wrapper. Keep closely related wrappers colocated when one requires that shell-specific behavior, as with `codex` and `codex-1p`.
 - Keep durable environment behavior aligned across fish, zsh, and bash. When adding or changing shared toolchain environment such as mise activation, Node certificate settings, or PostgreSQL PATH handling, update the fish snippets and the shared POSIX shell helpers together unless a shell-specific reason is documented.
 - Keep fish environment setup idempotent and guarded with `type -q`, `command -sq`, `test -d`, or `test -x`.
 - Use Fisher plugin lists as source of truth. Do not commit Fisher-generated plugin files, functions, completions, or themes.
@@ -41,6 +43,12 @@ description: Use when managing these chezmoi dotfiles, including profile-aware H
 - Use `run_once_` or `run_onchange_` for external state such as package installation, defaults writes, hook setup, or plugin-manager reconciliation.
 - Prefer checking for a tool binary before initializing it instead of hard-gating setup scripts by `brewProfile`; profiles decide installation, while initializers no-op with clear skip messages when tools are absent.
 - When a rendered file or sourced shell snippet is profile-specific, gate it by `brewProfile`.
+
+## Git
+
+- Use Git's XDG paths: `~/.config/git/config` for global configuration and `~/.config/git/ignore` for global exclusions. Do not reintroduce `~/.gitconfig` or `~/.gitignore` as active paths.
+- Chezmoi owns the global exclusions file. Keep the global configuration local to each machine because it contains identity, signing, credential-helper, and generated tool settings.
+- Keep legacy path references only in narrowly scoped migration scripts.
 
 ## Agent Tooling
 
