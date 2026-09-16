@@ -40,11 +40,62 @@ function __codex_with_github_token
     command $argv
 end
 
-function codex --wraps=codex --description 'Launch Codex with GitHub MCP authentication'
+function __codex_with_mcp_overrides
+    set -l launch_function $argv[1]
+    set -e argv[1]
+
+    set -l codex_args
+    while set -q argv[1]
+        set -l arg $argv[1]
+        set -e argv[1]
+
+        if test "$arg" = --
+            set -a codex_args -- $argv
+            break
+        end
+
+        if test "$arg" != --mcp
+            set -a codex_args "$arg"
+            continue
+        end
+
+        set -l found_mcp false
+        while set -q argv[1]
+            set -l mcp_value $argv[1]
+            if contains -- "$mcp_value" --mcp --
+                break
+            end
+            if string match --quiet --regex '^-' -- "$mcp_value"
+                break
+            end
+            set -e argv[1]
+
+            # Restrict names to TOML bare keys so they cannot alter another config path.
+            if not string match --quiet --regex '^[A-Za-z0-9_-]+(,[A-Za-z0-9_-]+)*$' -- "$mcp_value"
+                echo "codex: invalid MCP list: $mcp_value" >&2
+                return 2
+            end
+
+            for mcp in (string split , -- "$mcp_value")
+                set -a codex_args -c "mcp_servers.$mcp.enabled=true"
+            end
+            set found_mcp true
+        end
+
+        if test "$found_mcp" = false
+            echo 'codex: --mcp requires at least one MCP name' >&2
+            return 2
+        end
+    end
+
+    $launch_function $codex_args
+end
+
+function __codex_launch
     __codex_with_github_token codex $argv
 end
 
-function codex-1p --wraps=codex --description 'Launch Codex with GitHub and 1Password credentials'
+function __codex_1p_launch
     if not type -q op
         echo "codex-1p: 1Password CLI (op) is required" >&2
         return 127
@@ -57,4 +108,12 @@ function codex-1p --wraps=codex --description 'Launch Codex with GitHub and 1Pas
     end
 
     __codex_with_github_token op run --env-file="$env_file" -- codex $argv
+end
+
+function codex --wraps=codex --description 'Launch Codex with GitHub MCP authentication'
+    __codex_with_mcp_overrides __codex_launch $argv
+end
+
+function codex-1p --wraps=codex --description 'Launch Codex with GitHub and 1Password credentials'
+    __codex_with_mcp_overrides __codex_1p_launch $argv
 end
