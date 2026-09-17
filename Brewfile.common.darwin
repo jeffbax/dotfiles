@@ -1,4 +1,5 @@
 brew "mas"
+brew "terminal-notifier"
 
 cask_args appdir: "~/Applications"
 
