@@ -25,35 +25,47 @@ staged_files() {
   git diff --cached --name-only --diff-filter=ACMR
 }
 
+formatted_files="$(mktemp "${TMPDIR:-/tmp}/chezmoi-pre-commit.XXXXXX")"
+trap 'rm -f "$formatted_files"' EXIT HUP INT TERM
+
 format_staged_files() {
   staged_files | while IFS= read -r file; do
     case "$file" in
     *.fish)
       if [ -f "$file" ]; then
         require_command fish_indent "Install fish with: brew install fish"
+        before="$(cksum <"$file")"
         fish_indent --write "$file"
+        after="$(cksum <"$file")"
+      else
+        continue
       fi
       ;;
     *.sh | .githooks/*)
       if [ -f "$file" ]; then
         require_command shfmt "Install shfmt with: brew install shfmt"
+        before="$(cksum <"$file")"
         shfmt -i 2 -w "$file"
+        after="$(cksum <"$file")"
+      else
+        continue
       fi
       ;;
+    *)
+      continue
+      ;;
     esac
+
+    if [ "$before" != "$after" ]; then
+      printf '%s\n' "$file" >>"$formatted_files"
+    fi
   done
 }
 
 fail_if_format_changed_files() {
-  changed_files="$(staged_files | while IFS= read -r file; do
-    if [ -f "$file" ] && ! git diff --quiet -- "$file"; then
-      printf '%s\n' "$file"
-    fi
-  done)"
-
-  if [ -n "$changed_files" ]; then
+  if [ -s "$formatted_files" ]; then
     log "Formatting changed staged files. Review and stage them, then commit again:"
-    printf '%s\n' "$changed_files"
+    cat "$formatted_files"
     exit 1
   fi
 }
