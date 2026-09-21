@@ -4,9 +4,9 @@ cask "airserver"
 cask "audio-hijack"
 cask "crossover"
 cask "cyberduck"
-cask "diffusionbee"
+# cask "diffusionbee" # https://diffusionbee.com local AI image gen
 cask "discord"
-cask "docker-desktop"
+# cask "docker-desktop"
 cask "handbrake-app"
 # cask "hermes-desktop"
 cask "little-snitch"
@@ -16,7 +16,6 @@ cask "transmission"
 
 mas "CardPointers", id: 1472875808
 mas "djay", id: 450527929
-mas "DuckDuckGo Privacy for Safari", id: 1482920575
 mas "Flighty", id: 1358823008
 mas "Ivory", id: 6444602274
 mas "PCalc", id: 403504866

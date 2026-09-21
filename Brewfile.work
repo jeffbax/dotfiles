@@ -1,3 +1,4 @@
 tap "heroku/brew"
 
+brew "csvkit"
 brew "heroku/brew/heroku"

@@ -1,6 +1,3 @@
-brew "mas"
-brew "terminal-notifier"
-
 cask_args appdir: "~/Applications"
 
 cask "1password", args: { appdir: "/Applications" }
@@ -8,7 +5,7 @@ cask "1password-cli"
 cask "alfred"
 cask "codeedit"
 cask "codex"
-cask "copilot-cli"
+# cask "copilot-cli"
 cask "firefox@developer-edition"
 cask "font-fira-code-nerd-font"
 # cask "github"
