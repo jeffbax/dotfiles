@@ -10,7 +10,7 @@ fi
 if [ -n "$mise_path" ]; then
   case "$-" in
   *i*) eval "$("$mise_path" activate bash)" ;;
-  *) eval "$("$mise_path" env -q -s bash)" ;;
+  *) eval "$("$mise_path" activate bash --shims)" ;;
   esac
 fi
 unset mise_path
