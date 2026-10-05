@@ -1,5 +1,6 @@
 cask_args appdir: "~/Applications"
 
+cask "1password", args: { appdir: "/Applications" }
 cask "airserver"
 cask "audio-hijack"
 cask "crossover"
@@ -10,9 +11,11 @@ cask "discord"
 cask "handbrake-app"
 # cask "hermes-desktop"
 cask "little-snitch"
+cask "setapp", args: { appdir: "/Applications" }
 cask "spotify"
 cask "steam"
 cask "transmission"
+cask "visual-studio-code", args: { appdir: "/Applications" }
 
 mas "CardPointers", id: 1472875808
 mas "djay", id: 450527929
